@@ -47,14 +47,15 @@ public class SerialService implements Runnable {
         chargeStateByCode.put(247, "Auto equalize / Recondition");
         chargeStateByCode.put(252, "External Control");
 
-        boolean isDevMode = true;
+        boolean isDevMode = false;
         int battery_voltage_mV = 0;
         int battery_current_mA = 0;
 
         int panel_voltage_mV = 0;
         int panel_power_W = 0;
 
-        long yield_today_kWh = 0;
+        int yield_today_Wh = 0;
+        int yield_total_Wh = 0;
         int maximum_power_today_W = 0;
         
         Integer charge_state = -1;
@@ -66,6 +67,7 @@ public class SerialService implements Runnable {
         String panel_voltage_pattern = "VPV\t";
         String panel_power_pattern = "PPV\t";
 
+        String yield_total_pattern = "H19\t";
         String yield_today_pattern = "H20\t";
         String maximum_power_today_pattern = "H21\t";
 
@@ -150,12 +152,20 @@ public class SerialService implements Runnable {
                 }
             }
 
+            if (row.startsWith(yield_total_pattern)) {
+                try {
+                    String value = parts[1].trim();
+                    yield_total_Wh = Integer.parseInt(value);
+                } catch (NumberFormatException e) {
+                    System.err.println(e);
+                }
+            }
             if (row.startsWith(yield_today_pattern)) {
                 try {
                     String value = parts[1].trim();
-                    yield_today_kWh = Long.parseLong(value);
+                    yield_today_Wh = Integer.parseInt(value);
                     if (isDevMode) {
-                        yield_today_kWh = (long)Math.random() * 10 + 1;
+                        yield_today_Wh = (int)(Math.random() * 100 + 1);
                     }
                 } catch (NumberFormatException e) {
                     System.err.println(e);
@@ -173,11 +183,12 @@ public class SerialService implements Runnable {
                 }
             }
         }
-
-        Sqlite connection = new Sqlite(this.databaseName);
-        connection.insertController(chargeStateByCode.get(charge_state), errorByCode.get(error_code));
-        connection.insertPanel(panel_voltage_mV, panel_power_W);
-        connection.insertEnergy(battery_voltage_mV, battery_current_mA);
-        connection.upsertPower(yield_today_kWh, maximum_power_today_W);
+        if (charge_state > 0 || isDevMode) {
+            Sqlite connection = new Sqlite(this.databaseName);
+            connection.insertPanel(panel_voltage_mV, panel_power_W);
+            connection.insertEnergy(battery_voltage_mV, battery_current_mA);
+            connection.upsertPower(maximum_power_today_W, yield_today_Wh, yield_total_Wh);
+            connection.insertController(chargeStateByCode.get(charge_state), errorByCode.get(error_code));
+        }
     }
 }

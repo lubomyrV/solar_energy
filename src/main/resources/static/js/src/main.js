@@ -42,10 +42,8 @@ const months = [
             url: "/getTotalSumOfEnergy",
             success: function(result) {
                 console.log("getTotalSumOfEnergy ", result);
-                // let watts = Math.round(((result) + Number.EPSILON) * 100) / 100
-                let watts = result;
-                document.getElementById("totalSum").innerHTML = "Total sum of solar energy is " + watts + " watts";
-
+                let sumEnergy_kWh = Math.round(((result / 1000)) * 100) / 100;
+                document.getElementById("totalSum").innerHTML = "Total sum of solar energy " + sumEnergy_kWh + " kWh";
             },
             error: function(e) {
                 console.err("getTotalSumOfEnergy err: ", e);
@@ -201,7 +199,7 @@ const months = [
 
         let data = new google.visualization.DataTable();
         data.addColumn('number', 'X');
-        data.addColumn('number', 'W');
+        data.addColumn('number', 'Wh');
         data.addRows(dataRows);
         let options = {
             hAxis: {
@@ -210,7 +208,7 @@ const months = [
             vAxis: {
                 title: 'Energy'
             },
-            title: "Sum of energy per month: " + sumEnergy + " W"
+            title: "Sum of energy per month: " + sumEnergy + " Wh"
         };
         let chart = new google.visualization.LineChart(document.getElementById('chart_div'));
         chart.draw(data, options);

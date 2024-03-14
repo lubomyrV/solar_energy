@@ -51,18 +51,19 @@ public class Sqlite {
         return result;
     }
 
-    public int upsertPower(Long yield_today_kWh, Integer maximum_power_today_W) {
+    public int upsertPower(Integer maximum_power_today_W, Integer yield_today_Wh, Integer yield_total_Wh) {
         int result = 0;
-        if (yield_today_kWh <= 0 || maximum_power_today_W <= 0) {
+        if (yield_today_Wh <= 0) {
             return result;
         }
         String date = LocalDate.now().toString();
-        String query = "INSERT INTO powers (date,yield_today_kWh,maximum_power_today_W)"
-            + " VALUES(?,?,?)"
+        String query = "INSERT INTO powers (date,maximum_power_today_W,yield_today_Wh,yield_total_Wh)"
+            + " VALUES(?,?,?,?)"
             + " ON CONFLICT(date)"
             + " DO UPDATE SET "
-            + "     yield_today_kWh=excluded.yield_today_kWh,"
-            + "     maximum_power_today_W=excluded.maximum_power_today_W" 
+            + "     maximum_power_today_W=excluded.maximum_power_today_W," 
+            + "     yield_today_Wh=excluded.yield_today_Wh,"
+            + "     yield_total_Wh=excluded.yield_total_Wh"
             + " WHERE date = excluded.date";
         
         Connection conn = null;
@@ -70,18 +71,20 @@ public class Sqlite {
             conn = this.connect();
             PreparedStatement pstmt = conn.prepareStatement(query);
             pstmt.setString(1, date);
-            pstmt.setLong(2, yield_today_kWh);
-            pstmt.setInt(3, maximum_power_today_W);
+            pstmt.setInt(2, maximum_power_today_W);
+            pstmt.setInt(3, yield_today_Wh);
+            pstmt.setInt(4, yield_total_Wh);
             result = pstmt.executeUpdate();
             if (result > 0) {
                 Map<String, Object> dataMap = new HashMap<>();
                 dataMap.put("date", date);
-                dataMap.put("yield_today_kWh", yield_today_kWh);
+                dataMap.put("yield_total_Wh", yield_total_Wh);
+                dataMap.put("yield_today_Wh", yield_today_Wh);
                 dataMap.put("maximum_power_today_W", maximum_power_today_W);
                 System.out.println("Power record was upserted " + dataMap.toString());
             }
         } catch (SQLException e) {
-            System.err.println("SQLException on upsertPower " + e.getMessage());
+            System.err.println("SQLException on upsertPower " + e);
         } finally {
             this.close(conn);
         }
@@ -215,7 +218,7 @@ public class Sqlite {
         JSONArray datesJson = new JSONArray(dates);
         String datesStr = datesJson.toString();
         datesStr = datesStr.substring(1, datesStr.length() - 1);
-        String query = "SELECT date, ROUND(SUM(power_W / 60),2) AS watt_hours FROM panels WHERE date IN ("+datesStr+") GROUP BY date";
+        String query = "SELECT date, ROUND(SUM(yield_today_Wh),2) AS watt_hours FROM powers WHERE date IN ("+datesStr+") GROUP BY date";
         List<Map<String, Object>> result = new ArrayList<>();
         Connection conn = null;
         try {
@@ -241,7 +244,7 @@ public class Sqlite {
     }
 
     public float getTotalSumWattsHours() {
-        String query = "SELECT ROUND(SUM(power_W / 60),2) AS watt_hours FROM panels";
+        String query = "SELECT yield_total_Wh AS total_watt_hours FROM powers ORDER BY date DESC LIMIT 1";
         float result = 0;
         Connection conn = null;
         try {
@@ -250,7 +253,7 @@ public class Sqlite {
             ResultSet rs = pstmt.executeQuery();
             while (rs.next()) {
                 try {
-                    result = Float.parseFloat(rs.getString("watt_hours"));
+                    result = Float.parseFloat(rs.getString("total_watt_hours"));
                 } catch (Exception e) {
                     System.err.println("Exception on getTotalSumWattsHours parse values " + e.getMessage());
                 }
@@ -310,8 +313,9 @@ public class Sqlite {
         String powers = "CREATE TABLE IF NOT EXISTS powers (\n"
             + "	power_id            INTEGER PRIMARY KEY,\n"
             + "	date                TEXT UNIQUE,\n"
-            + "	yield_today_kWh     REAL,\n"
-            + "	maximum_power_today_W INTEGER\n"
+            + "	maximum_power_today_W INTEGER,\n"
+            + "	yield_today_Wh      INTEGER,\n"
+            + "	yield_total_Wh      INTEGER\n"
             + ");";
         Connection conn = null;
         try {
