@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.springframework.org/schema/mvc">
+<head>
+    <meta charset="UTF-8">
+    <title>Solar energy</title>
+</head>
+<body>
+
+<p>
+    Solar energy for
+<select name="months" id="months" onchange="getMonth(this)">
+    <option value="0">January</option>
+    <option value="1">February</option>
+    <option value="2">March</option>
+    <option value="3">April</option>
+    <option value="4">May</option>
+    <option value="5">June</option>
+    <option value="6">July</option>
+    <option value="7">August</option>
+    <option value="8">September</option>
+    <option value="9">October</option>
+    <option value="10">November</option>
+    <option value="11">December</option>
+</select>
+</p>
+
+<div id="chart_div"></div>
+
+<hr>
+
+<p>
+    Solar energy per day
+</p>
+<input type="date" id="calendarDate" name="calendarDate" onchange="selectDay()">
+<br />
+<div id="chart_div2"></div>
+
+<hr>
+
+<p id="totalSum"></p>
+
+<!-- <p>Select a CSV file to upload to the database:</p>
+<form method="POST" action="/uploadCsv" enctype="multipart/form-data">
+    <input type="file" name="file" /><br/><br/>
+    <input type="submit" value="Submit" />
+</form>
+<br /> -->
+<!--<button id="sync_button" type="button" onclick="syncSf()">Sync SF</button>-->
+
+<script type="text/javascript" src="https://code.jquery.com/jquery-git.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<script type="text/javascript" th:src="@{/js/src/main.js}"></script>
+
+</body>
+</html>
