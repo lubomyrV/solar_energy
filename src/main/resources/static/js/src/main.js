@@ -42,8 +42,8 @@ const months = [
             url: "/getTotalSumOfEnergy",
             success: function(result) {
                 console.log("getTotalSumOfEnergy ", result);
-                let sumEnergy_kWh = Math.round(((result / 1000)) * 100) / 100;
-                document.getElementById("totalSum").innerHTML = "Total sum of solar energy " + sumEnergy_kWh + " kWh";
+                let sumEnergy_Wh = Math.round(((result)) * 100) / 100;
+                document.getElementById("totalSum").innerHTML = "Total sum of solar energy " + sumEnergy_Wh + " Wh";
             },
             error: function(e) {
                 console.err("getTotalSumOfEnergy err: ", e);
@@ -83,32 +83,39 @@ const months = [
                 google.charts.setOnLoadCallback(() => {
                     console.log(jsonArr);
                     let timeMap = new Map();
+                    let divMap = new Map();
                     for (let i = 0; i < jsonArr.length; i++) {
                         let datetime = new Date(jsonArr[i].datetime);
+                        const hour = datetime.getHours();
                         //console.log("datetime " + datetime);
                         //console.log("getHours() " + datetime.getHours());
 
                         // let power = (jsonArr[i].voltage_mV / 1000.0 * jsonArr[i].current_mA / 1000.0);
                         let power = jsonArr[i].power_W ;
-                        if (!timeMap.has(datetime.getHours())) {
-                            timeMap.set(datetime.getHours(), 0);
+                        if (!timeMap.has(hour)) {
+                            timeMap.set(hour, 0);
+                            divMap.set(hour, 0);
                         }
-                        let sumOfPower = timeMap.get(datetime.getHours());
+                        let sumOfPower = timeMap.get(hour);
                         sumOfPower += power;
-                        timeMap.set(datetime.getHours(), sumOfPower);
+                        timeMap.set(hour, sumOfPower);
+                        divMap.set(hour, divMap.get(hour) + 1);
                     }
                     //console.log("timeMap " + JSON.stringify(timeMap));
 
                     let dataMap = [];
                     for (const key of timeMap.keys()) {
-                    //console.log("key " + key);
-                      dataMap.push([{
-                          v: [key -3 , 0, 0]
-                      }, timeMap.get(key) / 60]);
+                        // console.log("key " + key + " " +  divMap.get(key) + " " + timeMap.get(key));
+                        dataMap.push(
+                            [
+                                { v: [key -3 , 0, 0] }, 
+                                timeMap.get(key) / divMap.get(key)
+                            ]
+                        );
                     }
 
-                   for (let i = 0; i < jsonArr.length; i++) {
-                       let datetime = new Date(jsonArr[i].datetime);
+                //    for (let i = 0; i < jsonArr.length; i++) {
+                    //    let datetime = new Date(jsonArr[i].datetime);
                     //    console.log("datetime " + datetime);
                     //    let power = (jsonArr[i].voltage_mV / 1000.0 * jsonArr[i].current_mA / 1000.0) ;
                     //     let power = jsonArr[i].power_W ;
@@ -116,7 +123,7 @@ const months = [
                     //    dataMap.push([{
                     //        v: [datetime.getHours(), datetime.getMinutes(), 0]
                     //    }, power]);
-                   }
+                //    }
                     //console.log("dataMap " + JSON.stringify(dataMap));
 
                     let data = new google.visualization.DataTable();

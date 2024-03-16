@@ -93,7 +93,7 @@ public class Sqlite {
 
     public int insertEnergy(Integer battery_voltage_mV, Integer battery_current_mA) {
         int result = 0;
-        if (battery_voltage_mV <= 0 || battery_current_mA <= 0) {
+        if (battery_voltage_mV <= 5000 || battery_current_mA <= 10) {
             return result;
         }
         String query = "INSERT INTO energy (date,datetime,voltage_mV,current_mA) VALUES(?,?,?,?)";
@@ -125,7 +125,7 @@ public class Sqlite {
 
     public int insertPanel(Integer panel_voltage_mV, Integer panel_power_W) {
         int result = 0;
-        if (panel_voltage_mV <= 0 || panel_power_W <= 0) {
+        if (panel_voltage_mV <= 10000 || panel_power_W <= 0) {
             return result;
         }
         String query = "INSERT INTO panels (date,datetime,voltage_mV,power_W) VALUES(?,?,?,?)";

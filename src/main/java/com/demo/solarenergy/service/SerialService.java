@@ -1,5 +1,7 @@
 package com.demo.solarenergy.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import com.demo.solarenergy.database.Sqlite;
@@ -74,6 +76,7 @@ public class SerialService implements Runnable {
         String charge_state_pattern = "CS\t";
         String error_code_pattern = "ERR\t";
 
+        System.out.println(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")) + " received data: " + this.serialData.length);
         char[] dataArray = new  char[this.serialData.length];
         for (int i = 0; i < this.serialData.length; ++i) {
             dataArray[i] = (char)this.serialData[i];
@@ -132,7 +135,7 @@ public class SerialService implements Runnable {
                     String value = parts[1].trim();
                     panel_voltage_mV = Integer.parseInt(value);
                     if (isDevMode) {
-                        panel_voltage_mV = (int)(Math.random() * 18 + 5);
+                        panel_voltage_mV = (int)(Math.random() * 15000 + 5);
 
                     }
                 } catch (NumberFormatException e) {
@@ -183,11 +186,11 @@ public class SerialService implements Runnable {
                 }
             }
         }
-        if (charge_state > 0 || isDevMode) {
-            Sqlite connection = new Sqlite(this.databaseName);
+        Sqlite connection = new Sqlite(this.databaseName);
+        connection.upsertPower(maximum_power_today_W, yield_today_Wh, yield_total_Wh);
+        if ((charge_state > 0 && panel_power_W >= 0) || isDevMode) {
             connection.insertPanel(panel_voltage_mV, panel_power_W);
             connection.insertEnergy(battery_voltage_mV, battery_current_mA);
-            connection.upsertPower(maximum_power_today_W, yield_today_Wh, yield_total_Wh);
             connection.insertController(chargeStateByCode.get(charge_state), errorByCode.get(error_code));
         }
     }
