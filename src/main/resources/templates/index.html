@@ -28,9 +28,8 @@
 
 <hr>
 
-<p>
-    Solar energy per day
-</p>
+<p id="totalToday"></p>
+
 <input type="date" id="calendarDate" name="calendarDate" onchange="selectDay()">
 <br />
 <div id="chart_div2"></div>
@@ -47,8 +46,10 @@
 <br /> -->
 <!--<button id="sync_button" type="button" onclick="syncSf()">Sync SF</button>-->
 
-<script type="text/javascript" src="https://code.jquery.com/jquery-git.min.js"></script>
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+<!-- <script type="text/javascript" src="https://code.jquery.com/jquery-git.min.js"></script> -->
+<!-- <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script> -->
+<script type="text/javascript" th:src="@{/js/src/jquery.js}"></script>
+<script type="text/javascript" th:src="@{/js/src/gcharts.js}"></script>
 <script type="text/javascript" th:src="@{/js/src/main.js}"></script>
 
 </body>

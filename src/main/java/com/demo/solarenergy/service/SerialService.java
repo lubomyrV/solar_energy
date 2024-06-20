@@ -2,8 +2,6 @@ package com.demo.solarenergy.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
 import com.demo.solarenergy.database.Sqlite;
 
 public class SerialService implements Runnable {
@@ -16,39 +14,6 @@ public class SerialService implements Runnable {
 
     @Override
     public void run() {
-        Map<Integer,String> errorByCode = new HashMap<>();
-        errorByCode.put(0, "No error");
-        errorByCode.put(2, "Battery voltage too high");
-        errorByCode.put(17, "Charger temperature too high");
-        errorByCode.put(18, "Charger over current");
-        errorByCode.put(19, "Charger current reversed");
-        errorByCode.put(20, "Bulk time limit exceeded");
-        errorByCode.put(21, "Current sensor issue (sensor bias/sensor broken)");
-        errorByCode.put(26, "Terminals overheated");
-        errorByCode.put(28, "Converter issue (dual converter models only)");
-        errorByCode.put(33, "Input voltage too high (solar panel)");
-        errorByCode.put(34, "Input current too high (solar panel)");
-        errorByCode.put(38, "Input shutdown (due to excessive battery voltage)");
-        errorByCode.put(39, "Input shutdown (due to current flow during off mode)");
-        errorByCode.put(65, "Lost communication with one of devices");
-        errorByCode.put(66, "Synchronised charging device configuration issue");
-        errorByCode.put(67, "BMS connection lost");
-        errorByCode.put(68, "Network misconfigured");
-        errorByCode.put(116, "Factory calibration data lost");
-        errorByCode.put(117, "Invalid/incompatible firmware");
-        errorByCode.put(119, "User settings invalid");
-
-        Map<Integer,String> chargeStateByCode = new HashMap<>();
-        chargeStateByCode.put(0, "Off");
-        chargeStateByCode.put(2, "Fault");
-        chargeStateByCode.put(3, "Bulk");
-        chargeStateByCode.put(4, "Absorption");
-        chargeStateByCode.put(5, "Float");
-        chargeStateByCode.put(7, "Equalize (manual)");
-        chargeStateByCode.put(245, "Starting-up");
-        chargeStateByCode.put(247, "Auto equalize / Recondition");
-        chargeStateByCode.put(252, "External Control");
-
         boolean isDevMode = false;
         int battery_voltage_mV = 0;
         int battery_current_mA = 0;
@@ -191,7 +156,7 @@ public class SerialService implements Runnable {
         if ((charge_state > 0 && panel_power_W >= 0) || isDevMode) {
             connection.insertPanel(panel_voltage_mV, panel_power_W);
             connection.insertEnergy(battery_voltage_mV, battery_current_mA);
-            connection.insertController(chargeStateByCode.get(charge_state), errorByCode.get(error_code));
+            connection.insertController(MpptStaticData.getChargeStateByCode(charge_state), MpptStaticData.getErrorByCode(error_code));
         }
     }
 }

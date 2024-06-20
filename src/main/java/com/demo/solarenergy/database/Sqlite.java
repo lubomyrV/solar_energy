@@ -186,7 +186,7 @@ public class Sqlite {
     }
 
     public List<Map<String, Object>> getRecordsByDate(String date) {
-        String query = "SELECT * FROM panels WHERE date = ?";
+        String query = "SELECT * FROM energy WHERE date = ?";
         List<Map<String, Object>> result = new ArrayList<>();
         Connection conn = null;
         try {
@@ -200,7 +200,7 @@ public class Sqlite {
                     dataMap.put("datetime", LocalDateTime.parse(rs.getString("datetime"), this.ISO8601));
                     dataMap.put("date", LocalDate.parse(rs.getString("date")));
                     dataMap.put("voltage_mV", Float.parseFloat(rs.getString("voltage_mV")));
-                    dataMap.put("power_W", Float.parseFloat(rs.getString("power_W")));
+                    dataMap.put("current_mA", Float.parseFloat(rs.getString("current_mA")));
                     result.add(dataMap);
                 } catch (Exception e) {
                     System.err.println("Exception on getRecordsByDate parse values " + e.getMessage());
